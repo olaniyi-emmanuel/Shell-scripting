@@ -13,10 +13,10 @@ PASSWORD_FILE="$PASSWORD_DIR/user_passwords.txt"
 
 # Create log file and secure password directory and file with appropriate permissions
 touch $LOGFILE
-chmod 644 $LOGFILE
+chmod 600 $LOGFILE  # Ensure log file is secure
 mkdir -p $PASSWORD_DIR
 touch $PASSWORD_FILE
-chmod 600 $PASSWORD_FILE
+chmod 600 $PASSWORD_FILE  # Ensure password file is secure
 
 # Check if input file is provided
 if [ $# -eq 0 ]; then
@@ -33,20 +33,19 @@ do
 
     # Check if user already exists
     if id "$user" &>/dev/null; then
-        echo "User $user already exists. Skipping..." | tee -a $LOGFILE
-        continue
-    fi
-
-    # Create personal group for user
-    groupadd "$user"
-
-    # Create user and their personal group
-    useradd -m -g "$user" -s /bin/bash "$user"
-    if [ $? -eq 0 ]; then
-        echo "User $user created successfully." | tee -a $LOGFILE
+        echo "User $user already exists. Skipping user creation..." | tee -a $LOGFILE
     else
-        echo "Failed to create user $user." | tee -a $LOGFILE
-        continue
+        # Create personal group for user
+        groupadd "$user"
+
+        # Create user and their personal group
+        useradd -m -g "$user" -s /bin/bash "$user"
+        if [ $? -eq 0 ]; then
+            echo "User $user created successfully." | tee -a $LOGFILE
+        else
+            echo "Failed to create user $user." | tee -a $LOGFILE
+            continue
+        fi
     fi
 
     # Create additional groups and add user to them
