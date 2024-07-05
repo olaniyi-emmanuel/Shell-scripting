@@ -7,6 +7,14 @@ importance.
 You can learn more about the HNG Internship program here and discover how to hire talented interns [Visit HNG Internship](https://hng.tech/internship). Also you can learn more about Linux commands [here](https://docs.kernel.org/)
 
 Script Overview
-Our script, create_users.sh, reads a text file containing usernames and group names, where each line is formatted as user;groups. The script creates the users and groups
+The script, create_users.sh, reads a text file containing usernames and group names, where each line is formatted as user;groups. The script creates the users and groups
 as specified, sets up home directories with appropriate permissions, generates random passwords for the users, and logs all actions to /var/log/user_management.log.
 Additionally, the generated passwords are stored securely in /var/secure/user_passwords.txt.
+
+## Usage
+
+To use this script, run the following command:
+
+```bash
+bash create_users.sh <name-of-text-file>
+```
