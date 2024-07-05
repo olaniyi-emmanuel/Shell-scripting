@@ -8,11 +8,13 @@ fi
 
 # Log file and secure passwords file
 LOGFILE="/var/log/user_management.log"
-PASSWORD_FILE="/var/secure/user_passwords.txt"
+PASSWORD_DIR="/var/secure"
+PASSWORD_FILE="$PASSWORD_DIR/user_passwords.txt"
 
-# Create log file and secure password file with appropriate permissions
+# Create log file and secure password directory and file with appropriate permissions
 touch $LOGFILE
 chmod 644 $LOGFILE
+mkdir -p $PASSWORD_DIR
 touch $PASSWORD_FILE
 chmod 600 $PASSWORD_FILE
 
@@ -25,7 +27,7 @@ fi
 # Read input file line by line
 while IFS=';' read -r user groups
 do
-    # Remove whitespace
+    # Remove leading and trailing whitespace from user and groups
     user=$(echo "$user" | xargs)
     groups=$(echo "$groups" | xargs)
 
@@ -34,6 +36,9 @@ do
         echo "User $user already exists. Skipping..." | tee -a $LOGFILE
         continue
     fi
+
+    # Create personal group for user
+    groupadd "$user"
 
     # Create user and their personal group
     useradd -m -g "$user" -s /bin/bash "$user"
@@ -48,7 +53,20 @@ do
     IFS=',' read -r -a group_array <<< "$groups"
     for group in "${group_array[@]}"
     do
-        group=$(echo "$group" | xargs) # Remove whitespace
+        # Remove leading and trailing whitespace from group
+        group=$(echo "$group" | xargs)
+        
+        # Skip if group is empty
+        if [[ -z "$group" ]]; then
+            continue
+        fi
+
+        # Check for valid group name
+        if ! [[ "$group" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+            echo "'$group' is not a valid group name" | tee -a $LOGFILE
+            continue
+        fi
+
         if ! getent group "$group" > /dev/null 2>&1; then
             groupadd "$group"
             echo "Group $group created." | tee -a $LOGFILE
